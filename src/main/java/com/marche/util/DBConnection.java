@@ -1,14 +1,13 @@
 package com.marche.util;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
+
 
 public class DBConnection{
-
-	private static final String URL = "jdbc:postgresql://172.16.1.123:5432/postgres";
-	private static final String USER = "abcde";
-    private static final String PASSWORD = "2026aabb"; // PostgreSQLのパスワード
 
     // JDBCドライバのロード
     static {
@@ -25,7 +24,16 @@ public class DBConnection{
      * 呼び出し元で try-with-resources を使用して Connection を close すること
      */
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        Properties props = new Properties();
+        try {
+    		props.load( DBConnection.class.getResourceAsStream("/db.properties" ) );
+    	}catch (IOException e) {
+    		throw new RuntimeException("db.propertiesの読み込みに失敗しました",e);
+    	}
+        String url = props.getProperty("db.url");
+    	String user = props.getProperty("db.user");
+    	String pass = props.getProperty("db.password");
+        return DriverManager.getConnection(url, user, pass);
     }
 
     /**
