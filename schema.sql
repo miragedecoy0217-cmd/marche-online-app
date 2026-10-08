@@ -355,6 +355,14 @@ CREATE SEQUENCE public.stock_history_history_id_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE TABLE public.reviews (
+    review_id integer NOT NULL,
+    product_id integer NOT NULL,
+    order_id integer NOT NULL,
+    rating smallint NOT NULL,
+    comment text,
+    status public.review_status DEFAULT 'pending'::public.review_status NOT NULL,
+
 ALTER SEQUENCE public.stock_history_history_id_seq OWNER TO marche_app;
 ALTER SEQUENCE public.stock_history_history_id_seq OWNED BY public.stock_history.history_id;
 
