@@ -276,6 +276,7 @@ CREATE TABLE public.reviews (
     product_id integer NOT NULL,
     order_id integer NOT NULL,
     rating smallint NOT NULL,
+    comment text,
     status public.review_status DEFAULT 'pending'::public.review_status NOT NULL,
     approved_by integer,
     approved_at timestamp without time zone,
@@ -286,6 +287,7 @@ CREATE TABLE public.reviews (
 ALTER TABLE public.reviews OWNER TO marche_app;
 COMMENT ON TABLE public.reviews IS '商品レビューを管理するテーブル';
 COMMENT ON COLUMN public.reviews.order_id IS '購入確認用の注文ID（投稿者は orders.user_id をJOINして取得）';
+COMMENT ON COLUMN public.reviews.comment IS 'レビュー本文（任意）';
 COMMENT ON COLUMN public.reviews.is_deleted IS '論理削除フラグ（trueなら一覧に表示しない）';
 
 CREATE SEQUENCE public.review_review_id_seq
@@ -354,14 +356,6 @@ CREATE SEQUENCE public.stock_history_history_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-CREATE TABLE public.reviews (
-    review_id integer NOT NULL,
-    product_id integer NOT NULL,
-    order_id integer NOT NULL,
-    rating smallint NOT NULL,
-    comment text,
-    status public.review_status DEFAULT 'pending'::public.review_status NOT NULL,
 
 ALTER SEQUENCE public.stock_history_history_id_seq OWNER TO marche_app;
 ALTER SEQUENCE public.stock_history_history_id_seq OWNED BY public.stock_history.history_id;
