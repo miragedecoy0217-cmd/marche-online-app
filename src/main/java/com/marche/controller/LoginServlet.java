@@ -29,7 +29,7 @@ public class LoginServlet extends HttpServlet {
 			//②　DBからemailに一致するユーザーを検索
 			User user = userDAO.findByEmail(email);
 			//③ ユーザーが存在し、かつPWがBCryptで一致するかチェック
-			if (user != null && BCrypt.checpw(password, user.getPassword_hash())) {
+			if (user != null && BCrypt.checkpw(password, user.getPassword_hash())) {
 				//④　一致したらセッションにユーザー情報をセット
 				HttpSession session = request.getSession();
 				session.setAttribute("loginUser", user);
