@@ -61,8 +61,8 @@ body {
 
     <form action="${pageContext.request.contextPath}/login" method="post">
         <div class="form-group">
-            <label for="email">メールアドレス</label>
-            <input type="email" id="email" name="email" required>
+        <label for="email">メールアドレス / 管理者ID</label>
+		<input type="text" id="email" name="email" required>
         </div>
         
         <div class="form-group">

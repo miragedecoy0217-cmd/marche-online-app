@@ -108,7 +108,15 @@ public class ProductDAOTest {
             np.setStockCount(5);
             np.setImagePath("test.jpg");
 
-            int newId = dao.insert(np);
+            dao.insert(np);
+           
+         // 登録した商品のIDを、全件の中から商品名で探して取得する
+            int newId = -1;
+            for (Product p : dao.findAll()) {
+                if ("【テスト】登録確認用".equals(p.getProductName())) {
+                    newId = p.getProductId();
+                }
+            }
             System.out.println("=== insert: 採番ID=" + newId + " ===");
 
             Product got = dao.findById(newId);

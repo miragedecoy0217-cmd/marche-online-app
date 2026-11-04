@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -227,17 +226,17 @@ public class ProductDAO {
     }
 
     /**
-     * 商品を新規登録し、採番されたproduct_idを返す。
+     * 商品を新規登録する。
      * imagePath が null の場合は画像なしとして登録する。
      */
-    public int insert(Product p) throws SQLException {
+    public void insert(Product p) throws SQLException {
         String sql = "INSERT INTO products "
                 + "(category_id, product_name, description, price, stock_count, "
                 + "image_path, created_at, updated_at, is_deleted) "
                 + "VALUES (?, ?, ?, ?, ?, ?, now(), now(), false)";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, p.getCategoryId());
             pstmt.setString(2, p.getProductName());
@@ -247,13 +246,6 @@ public class ProductDAO {
             pstmt.setString(6, p.getImagePath());
 
             pstmt.executeUpdate();
-
-            try (ResultSet keys = pstmt.getGeneratedKeys()) {
-                if (keys.next()) {
-                    return keys.getInt("product_id");
-                }
-                throw new SQLException("product_idの採番結果を取得できませんでした。");
-            }
         }
     }
 
