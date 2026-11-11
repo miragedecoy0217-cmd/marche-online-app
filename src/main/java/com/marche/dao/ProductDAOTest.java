@@ -150,7 +150,10 @@ public class ProductDAOTest {
             System.out.println();
             System.out.println("※ テスト商品(ID=" + newId + ")は論理削除済みでDBに残ります。"
                     + "気になる場合はpgAdminで確認してください。");
-
+            // 12. 新着商品（トップページ用）
+            for (Product np2 : dao.findNewArrivals(3)) {
+                System.out.println("新着: " + np2.getProductId() + " / " + np2.getProductName());
+            }
         } catch (SQLException e) {
             System.out.println("=== エラー ===");
             e.printStackTrace();
