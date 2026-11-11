@@ -1,5 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,6 +17,32 @@
     .login-link { text-align: center; margin-top: 15px; font-size: 14px; }
     .login-link a { color: #007bff; text-decoration: none; }
     .login-link a:hover { text-decoration: underline; }
+
+/* bodyのスタイルを修正（方向を縦に並べるように変更） */
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column; /* 縦並びにする */
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f5f5f5;
+  position: relative; /* 位置の基準にする */
+}
+
+/* トップへ戻るリンク用の新しいスタイル */
+.back-to-top {
+  position: absolute;
+  bottom: 20px; /* 画面の下から20pxの位置に固定 */
+  color: #666;
+  text-decoration: none;
+}
+.back-to-top:hover {
+  text-decoration: underline;
+}
+
+
 </style>
 </head>
 <body>
@@ -53,6 +78,6 @@
         <a href="${pageContext.request.contextPath}/login">すでにアカウントをお持ちの方はこちら</a>
     </div>
 </div>
-
+<a href="index.jsp" class="back-to-top">トップへ戻る</a>
 </body>
 </html>

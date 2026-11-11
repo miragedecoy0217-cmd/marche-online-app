@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -225,19 +224,43 @@ public class ProductDAO {
             return rs.getInt(1);
         }
     }
-
     /**
-     * 商品を新規登録し、採番されたproduct_idを返す。
+     * トップページ用：新着商品（登録が新しい順）を取得する。
+     *
+     * @param limit 取得する件数
+     */
+    public List<Product> findNewArrivals(int limit) throws SQLException {
+        String sql = "SELECT " + COLUMNS
+                + " FROM products WHERE is_deleted = false "
+                + "ORDER BY created_at DESC, product_id DESC LIMIT ?";
+
+        List<Product> list = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, limit);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        }
+        return list;
+    }
+    /**
+     * 商品を新規登録する。
      * imagePath が null の場合は画像なしとして登録する。
      */
-    public int insert(Product p) throws SQLException {
+    public void insert(Product p) throws SQLException {
         String sql = "INSERT INTO products "
                 + "(category_id, product_name, description, price, stock_count, "
                 + "image_path, created_at, updated_at, is_deleted) "
                 + "VALUES (?, ?, ?, ?, ?, ?, now(), now(), false)";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, p.getCategoryId());
             pstmt.setString(2, p.getProductName());
@@ -247,13 +270,6 @@ public class ProductDAO {
             pstmt.setString(6, p.getImagePath());
 
             pstmt.executeUpdate();
-
-            try (ResultSet keys = pstmt.getGeneratedKeys()) {
-                if (keys.next()) {
-                    return keys.getInt("product_id");
-                }
-                throw new SQLException("product_idの採番結果を取得できませんでした。");
-            }
         }
     }
 
