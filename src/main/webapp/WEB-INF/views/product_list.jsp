@@ -80,7 +80,7 @@
 
     <!-- ECサイトのトップ（/）へ戻る -->
     <div class="text-center mt-4">
-       <a href="/">トップへ戻る</a>
+       <a href="${pageContext.request.contextPath}/">トップへ戻る</a>
     </div>
 </div>
 

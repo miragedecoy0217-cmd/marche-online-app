@@ -78,6 +78,6 @@ body {
         <a href="${pageContext.request.contextPath}/login">すでにアカウントをお持ちの方はこちら</a>
     </div>
 </div>
-<a href="index.jsp" class="back-to-top">トップへ戻る</a>
+<a href="${pageContext.request.contextPath}/" class="back-to-top">トップへ戻る</a>
 </body>
 </html>
