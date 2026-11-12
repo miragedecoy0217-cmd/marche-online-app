@@ -61,9 +61,7 @@
 								<c:out value="${p.productName}" />
 							</h5>
 							<p class="card-text text-danger fs-5 fw-bold mb-1">
-								<fmt:formatNumber value="${p.price}" pattern="#,##0" />
-								円
-							</p>
+								<fmt:formatNumber value="${p.price}" pattern="#,##0" />円</p>
 							<p class="card-text text-muted small mb-3">在庫:
 								${p.stockCount}</p>
 
