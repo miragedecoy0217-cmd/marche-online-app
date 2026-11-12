@@ -4,7 +4,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>商品一覧(test)</title>
+    <title>商品一覧</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -12,6 +12,12 @@
 <div class="container my-5">
     <h1 class="mb-4 fw-bold text-center">商品一覧</h1>
 
+    <div class="text-end mb-3">
+    <a href="${pageContext.request.contextPath}/cart"
+       class="btn btn-success">
+        カートを見る
+    </a>
+</div>
     <!-- 検索・カテゴリフォーム -->
     <form method="get" action="${pageContext.request.contextPath}/products" class="row g-3 mb-5 align-items-center bg-white p-3 rounded shadow-sm">
         <div class="col-md-4">

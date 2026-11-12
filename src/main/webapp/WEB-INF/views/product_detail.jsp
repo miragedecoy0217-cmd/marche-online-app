@@ -54,6 +54,24 @@
 			</c:forEach>
 		</div>
 
+		<form action="${pageContext.request.contextPath}/cart"
+      method="post"
+      class="mb-3">
+
+    <input type="hidden"
+           name="productId"
+           value="${product.productId}">
+
+    <input type="hidden"
+           name="quantity"
+           value="1">
+
+    <button type="submit"
+            class="btn btn-success">
+        カートに入れる
+    </button>
+
+</form>
 		<div class="mt-4">
 			<a href="${pageContext.request.contextPath}/products"
 				class="btn btn-outline-secondary">商品一覧へ戻る</a>
