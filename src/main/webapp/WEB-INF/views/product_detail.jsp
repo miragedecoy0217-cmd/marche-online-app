@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -23,7 +24,10 @@
 				<h1 class="h3 fw-bold">
 					<c:out value="${product.productName}" />
 				</h1>
-				<p class="text-danger fs-4 fw-bold mb-1">${product.price}円</p>
+				<p class="text-danger fs-4 fw-bold mb-1">
+					<fmt:formatNumber value="${product.price}" pattern="#,##0" />
+					円
+				</p>
 				<p class="text-muted">在庫: ${product.stockCount}</p>
 				<p>
 					<c:out value="${product.description}" />

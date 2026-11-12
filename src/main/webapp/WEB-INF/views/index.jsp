@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <!DOCTYPE html>
 <html lang="ja">
@@ -78,7 +79,7 @@
                     </c:if>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold fs-6"><c:out value="${p.productName}"/></h5>
-                        <p class="card-text text-danger fw-bold mb-3">${p.price}円</p>
+                        <p class="card-text text-danger fw-bold mb-3"><fmt:formatNumber value="${p.price}" pattern="#,##0" />円</p>
                         <a href="${ctx}/products/${p.productId}" class="btn btn-outline-primary btn-sm mt-auto">詳細を見る</a>
                     </div>
                 </div>
