@@ -19,7 +19,7 @@ public class CartServlet extends HttpServlet {
 	private CartDAO cartDAO = new CartDAO();
 
 	@Override
-	protected void doGet(javax.servlet.http.HttpServletRequest request, HttpServletRespondse response)
+	protected void doGet(javax.servlet.http.HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String pathInfo = request.getPathInfo();
 
@@ -120,7 +120,7 @@ public class CartServlet extends HttpServlet {
 				// POST /cart/remove/{product_id} (商品削除)
 				int productId = Integer.parseInt(pathInfo.substring("/remove/".length()));
 				cartDAO.delete(userId, productId);
-				response.sendRedirect(request.getContexPath() + "/cart");
+				response.sendRedirect(request.getContextPath() + "/cart");
 
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
