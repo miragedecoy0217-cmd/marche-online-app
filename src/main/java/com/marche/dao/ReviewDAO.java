@@ -18,7 +18,12 @@ import com.marche.util.DBConnection;
  *
  * ・投稿者は reviews に user_id を持たないため、orders → users をJOINして取得する。
  * ・削除は論理削除（is_deleted = true）。物理削除はしない。
- * ・レビュー本文は comment カラム（要: ALTER TABLE reviews ADD COLUMN comment TEXT;）。
+ * ・レビュー本文は comment カラム（schema.sql の reviews に、すでにある）。
+ *
+ * 【トランザクションの注意】
+ * 「Connection con」を受け取るメソッド（insert / approve / updateStatus / delete / findById）は、
+ * 呼び出し側（テスト・Servlet）が commit / rollback / close を行う。DAO内では閉じない。
+ * Connection を受け取らない版は、DAO内で接続を取得して閉じる（その場で確定する）。
  */
 public class ReviewDAO {
 
@@ -41,17 +46,15 @@ public class ReviewDAO {
     // ------------------------------------------------------------
 
     /**
-     * レビューを投稿する。status は DB の既定値（pending = 承認待ち）になる。
-     * 生成された review_id を返す。
+     * レビューを投稿する（トランザクション内で使う版）。
+     * status は DB の既定値（pending = 承認待ち）になる。生成された review_id を返す。
      * ※投稿前に findReviewableOrderId() で、投稿できる注文かを確認すること。
      */
-    public int insert(Review review) throws SQLException {
+    public int insert(Connection con, Review review) throws SQLException {
         String sql = "INSERT INTO reviews (product_id, order_id, rating, comment) "
                 + "VALUES (?, ?, ?, ?) RETURNING review_id";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, review.getProductId());
             ps.setInt(2, review.getOrderId());
             ps.setInt(3, review.getRating());
@@ -61,6 +64,15 @@ public class ReviewDAO {
                 rs.next();
                 return rs.getInt(1);
             }
+        }
+    }
+
+    /**
+     * レビューを投稿する（単独で使う版。その場で確定する）。
+     */
+    public int insert(Review review) throws SQLException {
+        try (Connection con = DBConnection.getConnection()) {
+            return insert(con, review);
         }
     }
 
@@ -176,13 +188,15 @@ public class ReviewDAO {
         return queryList(sql, status);
     }
 
-    /** review_id で1件取得する。見つからなければ null（削除済みも含む）。 */
-    public Review findById(int reviewId) throws SQLException {
+    /**
+     * review_id で1件取得する（トランザクション内で使う版）。
+     * 見つからなければ null（削除済みも含む）。
+     * 同じ con で登録・更新した直後の内容を確認するときに使う。
+     */
+    public Review findById(Connection con, int reviewId) throws SQLException {
         String sql = SELECT_BASE + "WHERE r.review_id = ?";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, reviewId);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -194,53 +208,80 @@ public class ReviewDAO {
         }
     }
 
+    /** review_id で1件取得する（単独で使う版）。見つからなければ null（削除済みも含む）。 */
+    public Review findById(int reviewId) throws SQLException {
+        try (Connection con = DBConnection.getConnection()) {
+            return findById(con, reviewId);
+        }
+    }
+
     /**
-     * レビューを承認する（status = approved、承認した管理者と日時を記録）。
+     * レビューを承認する（トランザクション内で使う版）。
+     * status = approved にして、承認した管理者と日時を記録する。
      * 更新できたら true、該当がなければ false。
      */
-    public boolean approve(int reviewId, int adminId) throws SQLException {
+    public boolean approve(Connection con, int reviewId, int adminId) throws SQLException {
         String sql = "UPDATE reviews SET status = CAST('approved' AS review_status), "
                 + "approved_by = ?, approved_at = now() "
                 + "WHERE review_id = ? AND is_deleted = false";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, adminId);
             ps.setInt(2, reviewId);
             return ps.executeUpdate() > 0;
         }
     }
 
+    /** レビューを承認する（単独で使う版。その場で確定する）。 */
+    public boolean approve(int reviewId, int adminId) throws SQLException {
+        try (Connection con = DBConnection.getConnection()) {
+            return approve(con, reviewId, adminId);
+        }
+    }
+
     /**
-     * ステータスを変更する（却下 rejected・非公開 hidden・承認待ちへ戻す pending など）。
+     * ステータスを変更する（トランザクション内で使う版）。
+     * 却下 rejected・非公開 hidden・承認待ちへ戻す pending などに使う。
      * 承認は approve() を使うこと（承認者・承認日時を記録するため）。
      */
-    public boolean updateStatus(int reviewId, String status) throws SQLException {
+    public boolean updateStatus(Connection con, int reviewId, String status) throws SQLException {
         checkStatus(status);
 
         String sql = "UPDATE reviews SET status = CAST(? AS review_status) "
                 + "WHERE review_id = ? AND is_deleted = false";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, reviewId);
             return ps.executeUpdate() > 0;
         }
     }
 
-    /** レビューを論理削除する（is_deleted = true）。 */
-    public boolean delete(int reviewId) throws SQLException {
+    /** ステータスを変更する（単独で使う版。その場で確定する）。 */
+    public boolean updateStatus(int reviewId, String status) throws SQLException {
+        try (Connection con = DBConnection.getConnection()) {
+            return updateStatus(con, reviewId, status);
+        }
+    }
+
+    /**
+     * レビューを論理削除する（トランザクション内で使う版。is_deleted = true）。
+     * すでに削除済みなら false。
+     */
+    public boolean delete(Connection con, int reviewId) throws SQLException {
         String sql = "UPDATE reviews SET is_deleted = true "
                 + "WHERE review_id = ? AND is_deleted = false";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, reviewId);
             return ps.executeUpdate() > 0;
+        }
+    }
+
+    /** レビューを論理削除する（単独で使う版。その場で確定する）。 */
+    public boolean delete(int reviewId) throws SQLException {
+        try (Connection con = DBConnection.getConnection()) {
+            return delete(con, reviewId);
         }
     }
 
