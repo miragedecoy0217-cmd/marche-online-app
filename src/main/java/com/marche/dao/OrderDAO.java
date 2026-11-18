@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -25,9 +26,17 @@ import com.marche.util.DBConnection;
  */
 public class OrderDAO {
 
+    /** 1ページに表示する件数（管理の注文一覧・マイページ共通） */
+    public static final int PAGE_SIZE = 20;
+
     /** order_status ENUM に存在する値（不正な値でSQLエラーになるのを防ぐ） */
     private static final List<String> VALID_STATUS = Arrays.asList(
             "pending", "confirmed", "shipped", "delivered", "cancelled", "refunded");
+
+    /** orders テーブルの列名（明細なしのSELECTで共通に使う） */
+    private static final String ORDER_COLUMNS =
+            "order_id, user_id, address_id, total_amount, status, "
+            + "payment_method, cancel_reason, cancelled_at, order_at ";
 
     // 注文＋明細を一括取得するSELECT句（JOIN）
     private static final String SELECT_WITH_DETAILS =
@@ -110,16 +119,14 @@ public class OrderDAO {
     }
 
     // ------------------------------------------------------------
-    // 参照系（注文のみ）
+    // 参照系（注文のみ・明細なし）
     // ------------------------------------------------------------
 
     /**
      * 注文を1件取得する（明細なし）。見つからなければ null。
      */
     public Order findById(int orderId) throws SQLException {
-        String sql = "SELECT order_id, user_id, address_id, total_amount, status, "
-                + "payment_method, cancel_reason, cancelled_at, order_at "
-                + "FROM orders WHERE order_id = ?";
+        String sql = "SELECT " + ORDER_COLUMNS + "FROM orders WHERE order_id = ?";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -136,11 +143,10 @@ public class OrderDAO {
     }
 
     /**
-     * 全注文を新しい順に取得する（管理画面用。明細なし）。
+     * 全注文を新しい順に取得する（明細なし）。
      */
     public List<Order> findAll() throws SQLException {
-        String sql = "SELECT order_id, user_id, address_id, total_amount, status, "
-                + "payment_method, cancel_reason, cancelled_at, order_at "
+        String sql = "SELECT " + ORDER_COLUMNS
                 + "FROM orders ORDER BY order_at DESC, order_id DESC";
 
         List<Order> list = new ArrayList<>();
@@ -160,8 +166,7 @@ public class OrderDAO {
      * 直近の注文を件数指定で取得する（管理ダッシュボード用。明細なし）。
      */
     public List<Order> findRecent(int limit) throws SQLException {
-        String sql = "SELECT order_id, user_id, address_id, total_amount, status, "
-                + "payment_method, cancel_reason, cancelled_at, order_at "
+        String sql = "SELECT " + ORDER_COLUMNS
                 + "FROM orders ORDER BY order_at DESC, order_id DESC LIMIT ?";
 
         List<Order> list = new ArrayList<>();
@@ -181,13 +186,12 @@ public class OrderDAO {
     }
 
     /**
-     * ステータスで絞り込んで取得する（管理画面用。明細なし）。
+     * ステータスで絞り込んで取得する（明細なし。ページングなし）。
      */
     public List<Order> findByStatus(String status) throws SQLException {
         checkStatus(status);
 
-        String sql = "SELECT order_id, user_id, address_id, total_amount, status, "
-                + "payment_method, cancel_reason, cancelled_at, order_at "
+        String sql = "SELECT " + ORDER_COLUMNS
                 + "FROM orders WHERE status = CAST(? AS order_status) "
                 + "ORDER BY order_at DESC, order_id DESC";
 
@@ -208,11 +212,120 @@ public class OrderDAO {
     }
 
     // ------------------------------------------------------------
+    // 管理画面の注文一覧（No.25：status・date_from・date_to・page）
+    // ------------------------------------------------------------
+
+    /**
+     * 注文を条件で絞り込み、ページ単位で取得する（明細なし）。
+     * status が null または空なら絞り込まない。dateFrom / dateTo が null なら絞り込まない。
+     * dateTo は「その日の終わりまで」を含む。page は 1 から始まる。
+     * ※JOINすると LIMIT が明細の行数で数えられてしまうため、明細なしで返す。
+     */
+    public List<Order> search(String status, LocalDate dateFrom, LocalDate dateTo, int page)
+            throws SQLException {
+        List<Object> params = new ArrayList<>();
+        String where = buildWhere(status, dateFrom, dateTo, params);
+
+        String sql = "SELECT " + ORDER_COLUMNS
+                + "FROM orders WHERE 1 = 1" + where
+                + " ORDER BY order_at DESC, order_id DESC LIMIT ? OFFSET ?";
+
+        params.add(PAGE_SIZE);
+        params.add(toOffset(page));
+
+        List<Order> list = new ArrayList<>();
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            setParams(ps, params);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapOrder(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * search() と同じ条件での総件数を返す（ページ数の計算用）。
+     */
+    public int count(String status, LocalDate dateFrom, LocalDate dateTo) throws SQLException {
+        List<Object> params = new ArrayList<>();
+        String where = buildWhere(status, dateFrom, dateTo, params);
+
+        String sql = "SELECT COUNT(*) FROM orders WHERE 1 = 1" + where;
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            setParams(ps, params);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------
+    // マイページ（No.16 注文履歴一覧）
+    // ------------------------------------------------------------
+
+    /**
+     * ユーザーの注文履歴を、新しい順にページ単位で取得する（明細なし）。
+     * page は 1 から始まる。
+     */
+    public List<Order> findByUserId(int userId, int page) throws SQLException {
+        String sql = "SELECT " + ORDER_COLUMNS
+                + "FROM orders WHERE user_id = ? "
+                + "ORDER BY order_at DESC, order_id DESC LIMIT ? OFFSET ?";
+
+        List<Order> list = new ArrayList<>();
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            ps.setInt(2, PAGE_SIZE);
+            ps.setInt(3, toOffset(page));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapOrder(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * ユーザーの注文の総件数を返す（ページ数の計算用）。
+     */
+    public int countByUserId(int userId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM orders WHERE user_id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------
     // 参照系（注文＋明細をJOINで一括取得）
     // ------------------------------------------------------------
 
     /**
-     * ユーザーの注文履歴を、明細つきで新しい順に取得する（マイページ用）。
+     * ユーザーの注文履歴を、明細つきで新しい順に全件取得する。
+     * ※件数が多いと重くなるので、一覧画面には findByUserId（ページ付き）を使うこと。
      */
     public List<Order> findByUserIdWithDetails(int userId) throws SQLException {
         String sql = SELECT_WITH_DETAILS
@@ -231,7 +344,8 @@ public class OrderDAO {
     }
 
     /**
-     * 注文を1件、明細つきで取得する（注文詳細画面用）。見つからなければ null。
+     * 注文を1件、明細つきで取得する（管理画面用。本人確認なし）。見つからなければ null。
+     * ※ログインユーザー向けの画面では、下の userId つきの版を使うこと。
      */
     public Order findByIdWithDetails(int orderId) throws SQLException {
         String sql = SELECT_WITH_DETAILS
@@ -250,9 +364,73 @@ public class OrderDAO {
         }
     }
 
+    /**
+     * 注文を1件、明細つきで取得する（マイページの注文詳細用。No.17）。
+     * 注文の user_id が引数の userId と一致しない場合は null を返す（他人の注文は見せない）。
+     * 「存在しない」と「他人の注文」は、どちらも null で区別しない。
+     */
+    public Order findByIdWithDetails(int orderId, int userId) throws SQLException {
+        String sql = SELECT_WITH_DETAILS
+                + "WHERE o.order_id = ? AND o.user_id = ? "
+                + "ORDER BY d.detail_id";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Order> list = groupByOrder(rs);
+                return list.isEmpty() ? null : list.get(0);
+            }
+        }
+    }
+
     // ------------------------------------------------------------
     // 内部メソッド
     // ------------------------------------------------------------
+
+    /**
+     * 検索条件のWHERE句の続き（" AND ..."）を作り、バインドする値を params に追加する。
+     */
+    private String buildWhere(String status, LocalDate dateFrom, LocalDate dateTo,
+            List<Object> params) {
+        StringBuilder where = new StringBuilder();
+
+        if (status != null && !status.isEmpty()) {
+            checkStatus(status);
+            where.append(" AND status = CAST(? AS order_status)");
+            params.add(status);
+        }
+        if (dateFrom != null) {
+            where.append(" AND order_at >= ?");
+            params.add(Timestamp.valueOf(dateFrom.atStartOfDay()));
+        }
+        if (dateTo != null) {
+            // 「その日の終わりまで」を含めるため、翌日の0時より前、とする
+            where.append(" AND order_at < ?");
+            params.add(Timestamp.valueOf(dateTo.plusDays(1).atStartOfDay()));
+        }
+        return where.toString();
+    }
+
+    /**
+     * params の値を、先頭から順に PreparedStatement にセットする。
+     */
+    private void setParams(PreparedStatement ps, List<Object> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
+    }
+
+    /**
+     * ページ番号（1始まり）を OFFSET の値に変換する。1未満は 1 ページ目として扱う。
+     */
+    private int toOffset(int page) {
+        int p = (page < 1) ? 1 : page;
+        return (p - 1) * PAGE_SIZE;
+    }
 
     /**
      * JOINの結果（1明細=1行）を、注文ごとにまとめる。
