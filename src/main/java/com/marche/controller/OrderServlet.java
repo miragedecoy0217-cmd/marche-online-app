@@ -29,13 +29,16 @@ public class OrderServlet extends HttpServlet {
     private CartDAO cartDAO = new CartDAO();
     private OrderDAO orderDAO = new OrderDAO();
 
-    // No.13 GET /order (注文・支払い方法入力画面の表示)
+ // No.13 & No.15 GET /order および GET /order/complete
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
         
         if (pathInfo == null || pathInfo.equals("/")) {
+            // ----------------------------------------------------
+            // 1. 注文入力・確認画面の表示処理
+            // ----------------------------------------------------
             HttpSession session = request.getSession();
             User loginUser = (User) session.getAttribute("loginUser");
 
@@ -67,6 +70,29 @@ public class OrderServlet extends HttpServlet {
             request.setAttribute("totalAmount", totalAmount);
 
             request.getRequestDispatcher("/WEB-INF/views/order.jsp").forward(request, response);
+
+        } else if ("/complete".equals(pathInfo)) {
+            // ----------------------------------------------------
+            // 2. 注文完了画面の表示処理 (PRGパターンの遷移先)
+            // ----------------------------------------------------
+            HttpSession session = request.getSession();
+            User loginUser = (User) session.getAttribute("loginUser");
+
+            if (loginUser == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+
+            // セッションから直近の注文IDを取得
+            Integer orderId = (Integer) session.getAttribute("lastOrderId");
+            request.setAttribute("orderId", orderId);
+
+            // ※一度表示したら二重保持を防ぐためにセッションからクリアする場合
+            session.removeAttribute("lastOrderId");
+
+            // 注文完了JSPへフォワード
+            request.getRequestDispatcher("/WEB-INF/views/order_complete.jsp").forward(request, response);
+
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
