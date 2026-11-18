@@ -10,10 +10,34 @@
     <title>マルシェオンライン</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .site-header { background: #1e2d42; }
-        .btn-accent { background: #c84c24; border-color: #c84c24; color: #fff; }
-        .btn-accent:hover { background: #a63e1c; border-color: #a63e1c; color: #fff; }
-        .hero { background: linear-gradient(135deg, #1e2d42 0%, #3b5b7f 60%, #c84c24 100%); color: #fff; }
+        .site-header { background: #FFFFFF;
+                       border-bottom:1px solid #ddd; }
+        .btn-accent{
+                       background:#F59E0B;
+                       border-color:#F59E0B;}
+        .btn-accent:hover {
+                       background:#D97706;
+                       border-color:#D97706;
+                       color:#fff;}
+        .hero{ background: linear-gradient(
+                135deg,
+                #EFF6FF 0%,
+                #DBEAFE 100%
+                );
+                color:#1F2937;}
+        .card{
+                border:none;
+                border-radius:12px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                transition:0.3s;}
+        .card:hover{
+                transform:translateY(-5px);
+                box-shadow:0 6px 20px rgba(0,0,0,0.15);}
+        .btn-outline-primary{
+                border-radius:20px;}
+        .logo-img{
+                height:70px;
+                width:auto;}
     </style>
 </head>
 <body class="bg-light">
@@ -21,7 +45,7 @@
 <!-- ヘッダー -->
 <nav class="site-header navbar navbar-dark">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="${ctx}/">マルシェオンライン</a>
+        <a class="navbar-brand fw-bold" href="${ctx}/"><img src="${ctx}/images/logoma-ku.png"alt="マルシェオンライン"class="logo-img"></a>
         <div class="d-flex align-items-center gap-2">
             <c:choose>
                 <c:when test="${not empty loginAdmin}">
@@ -75,7 +99,7 @@
             <div class="col">
                 <div class="card h-100 shadow-sm">
                     <c:if test="${not empty p.imagePath}">
-                        <img src="${ctx}/${p.imagePath}" class="card-img-top" alt="<c:out value='${p.productName}'/>" style="height: 160px; object-fit: cover;" onerror="this.style.display='none'">
+                        <img src="${ctx}/${p.imagePath}" class="card-img-top" alt="<c:out value='${p.productName}'/>" style="height: 220px; object-fit: cover;" onerror="this.style.display='none'">
                     </c:if>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold fs-6"><c:out value="${p.productName}"/></h5>
