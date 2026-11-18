@@ -26,7 +26,6 @@ public class UserDAO {
 					user.setEmail(rs.getString("email"));
 					user.setPassword_hash(rs.getString("password_hash"));
 					user.setName(rs.getString("name"));
-					user.setRole(rs.getString("role"));  
 					
 					return user;
 				}

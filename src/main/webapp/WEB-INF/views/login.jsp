@@ -73,7 +73,7 @@ body {
         <button type="submit" class="btn-submit">ログイン</button>
     </form>
 </div>
-<a href="index.jsp" class="back-to-top">トップへ戻る</a>
+<a href="${pageContext.request.contextPath}/" class="back-to-top">トップへ戻る</a>
 
 </body>
 </html>
