@@ -1,0 +1,323 @@
+[1mdiff --cc src/main/java/com/marche/controller/CartServlet.java[m
+[1mindex b99c7eb,ea682b9..0000000[m
+[1m--- a/src/main/java/com/marche/controller/CartServlet.java[m
+[1m+++ b/src/main/java/com/marche/controller/CartServlet.java[m
+[36m@@@ -1,94 -1,132 +1,214 @@@[m
+  package com.marche.controller;[m
+[31m--[m
+[32m++ [m
+  import java.io.IOException;[m
+[32m++[m
+  import java.util.List;[m
+[31m -import java.util.UUID;[m
+  [m
+[32m++import java.util.UUID;[m
+[32m++ [m
+  import javax.servlet.ServletException;[m
+[32m++[m
+  import javax.servlet.annotation.WebServlet;[m
+[32m++[m
+  import javax.servlet.http.HttpServlet;[m
+[31m- import javax.servlet.http.HttpServletRequest;[m
+[31m--import javax.servlet.http.HttpServletResponse;[m
+[31m- import javax.servlet.http.HttpSession;[m
+  [m
+[32m++import javax.servlet.http.HttpServletResponse;[m
+[32m++ [m
+  import com.marche.dao.CartDAO;[m
+[32m++[m
+  import com.marche.model.CartItem;[m
+[31m -import com.marche.model.User;[m
+[32m+ [m
+[32m +import com.marche.model.User;[m
+[32m++ [m
+[32m+ @WebServlet("/cart/*")[m
+[32m +[m
+[31m- @WebServlet("/cart")[m
+  public class CartServlet extends HttpServlet {[m
+[32m +[m
+[31m-     private CartDAO cartDAO = new CartDAO();[m
+[31m- [m
+[31m-     @Override[m
+[31m-     protected void doGet(HttpServletRequest request,[m
+[31m-             HttpServletResponse response)[m
+[31m-             throws ServletException, IOException {[m
+[31m- [m
+[31m-         HttpSession session = request.getSession(false);[m
+[31m- [m
+[31m-         if (session == null) {[m
+[31m-             response.sendRedirect([m
+[31m-                     request.getContextPath()[m
+[31m-                     + "/login");[m
+[31m-             return;[m
+[31m-         }[m
+[31m- [m
+[31m-         User loginUser =[m
+[31m-                 (User) session.getAttribute("loginUser");[m
+[31m- [m
+[31m-         if (loginUser == null) {[m
+[31m-             response.sendRedirect([m
+[31m-                     request.getContextPath()[m
+[31m-                     + "/login");[m
+[31m-             return;[m
+[31m-         }[m
+[31m- [m
+[31m-         List<CartItem> cartItems =[m
+[31m-                 cartDAO.findByUserID([m
+[31m-                         loginUser.getUser_id());[m
+[31m- [m
+[31m-         request.setAttribute([m
+[31m-                 "cartItems",[m
+[31m-                 cartItems);[m
+[31m- [m
+[31m-         request.getRequestDispatcher([m
+[31m-                 "/WEB-INF/views/Cart.jsp")[m
+[31m-                 .forward(request, response);[m
+[31m-     }[m
+[31m- [m
+[31m-     @Override[m
+[31m-     protected void doPost(HttpServletRequest request,[m
+[31m-             HttpServletResponse response)[m
+[31m-             throws ServletException, IOException {[m
+[31m- [m
+[31m-         HttpSession session =[m
+[31m-                 request.getSession(false);[m
+[31m- [m
+[31m-         User loginUser =[m
+[31m-                 (User) session.getAttribute("loginUser");[m
+[31m- [m
+[31m-         if (loginUser == null) {[m
+[31m-             response.sendRedirect([m
+[31m-                     request.getContextPath()[m
+[31m-                     + "/login");[m
+[31m-             return;[m
+[31m-         }[m
+[31m- [m
+[31m-         int productId =[m
+[31m-                 Integer.parseInt([m
+[31m-                         request.getParameter("productId"));[m
+[31m- [m
+[31m-         int quantity =[m
+[31m-                 Integer.parseInt([m
+[31m-                         request.getParameter("quantity"));[m
+[31m- [m
+[31m-         cartDAO.addOrUpdate([m
+[31m-                 loginUser.getUser_id(),[m
+[31m-                 productId,[m
+[31m-                 quantity);[m
+[31m- [m
+[31m-         response.sendRedirect([m
+[31m-                 request.getContextPath()[m
+[31m-                 + "/cart");[m
+[31m-     }[m
+[31m- }[m
+[32m+ 	private static final long serialVersionUID = 1L;[m
+[31m -	private CartDAO cartDAO = new CartDAO();[m
+[32m+ [m
+[32m++	private CartDAO cartDAO = new CartDAO();[m
+[32m++ [m
+[32m+ 	@Override[m
+[32m++[m
+[32m+ 	protected void doGet(javax.servlet.http.HttpServletRequest request, HttpServletResponse response)[m
+[32m++[m
+[32m+ 			throws ServletException, IOException {[m
+[31m -		String pathInfo = request.getPathInfo();[m
+[32m+ [m
+[32m++		String pathInfo = request.getPathInfo();[m
+[32m++ [m
+[32m+ 		//GET /cart(カート一覧画面表示)[m
+[32m++[m
+[32m+ 		if (pathInfo == null || pathInfo.equals("/")) {[m
+[32m++[m
+[32m+ 			javax.servlet.http.HttpSession session = request.getSession();[m
+[31m -			User loginUser = (User) session.getAttribute("loginUser");[m
+[32m+ [m
+[32m++			User loginUser = (User) session.getAttribute("loginUser");[m
+[32m++ [m
+[32m+ 			if (loginUser == null) {[m
+[32m++[m
+[32m+ 				response.sendRedirect(request.getContextPath() + "/login");[m
+[32m++[m
+[32m+ 				return;[m
+[31m -			}[m
+[32m+ [m
+[32m++			}[m
+[32m++ [m
+[32m+ 			int userId = loginUser.getUser_id();[m
+[31m -[m
+[32m++ [m
+[32m+ 			//CSRF トークンの生成・保持[m
+[32m++[m
+[32m+ 			String csrfToken = (String) session.getAttribute("csrfToken");[m
+[32m++[m
+[32m+ 			if (csrfToken == null) {[m
+[32m++[m
+[32m+ 				csrfToken = UUID.randomUUID().toString();[m
+[32m++[m
+[32m+ 				session.setAttribute("csrfToken", csrfToken);[m
+[32m++[m
+[32m+ 			}[m
+[31m -			request.setAttribute("csrfToken", csrfToken);[m
+[32m+ [m
+[32m++			request.setAttribute("csrfToken", csrfToken);[m
+[32m++ [m
+[32m+ 			//カート内商品一覧の取得[m
+[31m -			List<CartItem> cartItems = cartDAO.findByUserID(userId);[m
+[32m+ [m
+[32m++			List<CartItem> cartItems = cartDAO.findByUserID(userId);[m
+[32m++ [m
+[32m+ 			//合計金額の計算[m
+[32m++[m
+[32m+ 			int totalAmount = 0;[m
+[32m++[m
+[32m+ 			for (CartItem item : cartItems) {[m
+[32m++[m
+[32m+ 				totalAmount += item.getSubtotal();[m
+[31m -			}[m
+[32m+ [m
+[32m++			}[m
+[32m++ [m
+[32m+ 			request.setAttribute("cartItems", cartItems);[m
+[31m -			request.setAttribute("totalAmount", totalAmount);[m
+[32m+ [m
+[32m++			request.setAttribute("totalAmount", totalAmount);[m
+[32m++ [m
+[32m+ 			request.getRequestDispatcher("/WEB-INF/views/cart.isp").forward(request, response);[m
+[32m++[m
+[32m+ 		} else {[m
+[32m++[m
+[32m+ 			response.sendError(javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);[m
+[32m++[m
+[32m+ 		}[m
+[31m -	}[m
+[32m+ [m
+[32m++	}[m
+[32m++ [m
+[32m+ 	@Override[m
+[32m++[m
+[32m+ 	protected void doPost(javax.servlet.http.HttpServletRequest request,[m
+[32m++[m
+[32m+ 			javax.servlet.http.HttpServletResponse response)[m
+[32m++[m
+[32m+ 			throws ServletException,IOException {[m
+[32m++[m
+[32m+ 		String pathInfo = request.getPathInfo();[m
+[32m++[m
+[32m+ 		if (pathInfo == null) {[m
+[32m++[m
+[32m+ 			response.sendError(HttpServletResponse.SC_NOT_FOUND);[m
+[32m++[m
+[32m+ 			return;[m
+[31m -		}[m
+[32m+ [m
+[32m++		}[m
+[32m++ [m
+[32m+ 		javax.servlet.http.HttpSession session = request.getSession();[m
+[32m++[m
+[32m+ 		User loginUser = (User) session.getAttribute("loginUser");[m
+[32m++[m
+[32m+ 		if (loginUser == null) {[m
+[32m++[m
+[32m+ 			response.sendRedirect(request.getContextPath() + "/login");[m
+[32m++[m
+[32m+ 			return;[m
+[31m -		}[m
+[32m+ [m
+[32m++		}[m
+[32m++ [m
+[32m+ 		//CSRF トークン検証[m
+[32m++[m
+[32m+ 		String sessionToken = (String) session.getAttribute("csrfToken");[m
+[32m++[m
+[32m+ 		String requestToken = request.getParameter("csrf token");[m
+[32m++[m
+[32m+ 		if (sessionToken == null || !sessionToken.equals(requestToken)) {[m
+[32m++[m
+[32m+ 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "CSEFトークンが一致しません。");[m
+[32m++[m
+[32m+ 			return;[m
+[31m -		}[m
+[32m+ [m
+[32m++		}[m
+[32m++ [m
+[32m+ 		int userId = loginUser.getUser_id();[m
+[31m -[m
+[32m++ [m
+[32m+ 		try {[m
+[32m++[m
+[32m+ 			if (pathInfo.equals("/add")) {[m
+[32m++[m
+[32m+ 				//POST /cart/add(商品追加)[m
+[32m++[m
+[32m+ 				int productId = Integer.parseInt(request.getParameter("product_id"));[m
+[31m -				int quantity = Integer.parseInt(request.getParameter("quantity"));[m
+[32m+ [m
+[32m++				int quantity = Integer.parseInt(request.getParameter("quantity"));[m
+[32m++ [m
+[32m+ 				if (quantity < 1) {[m
+[31m -					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "数量は1以上を指定してください。");[m
+[32m+ [m
+[32m++					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "数量は1以上を指定してください。");[m
+[32m++ [m
+[32m+ 					return;[m
+[32m++[m
+[32m+ 				}[m
+[32m++[m
+[32m+ 				//TODO:必要に応じて在庫チェックや商品存在確認をここに挟むことができます[m
+[32m++[m
+[32m+ 				cartDAO.addOrUpdate(userId, productId, quantity);[m
+[31m -				response.sendRedirect(request.getContextPath() + "/cart");[m
+[32m+ [m
+[32m++				response.sendRedirect(request.getContextPath() + "/cart");[m
+[32m++ [m
+[32m+ 			} else if (pathInfo.startsWith("/update/")) {[m
+[32m++[m
+[32m+ 				//POST/cart/update/{product_id} (数量変更)[m
+[32m++[m
+[32m+ 				int productId = Integer.parseInt(pathInfo.substring("/update/".length()));[m
+[31m -				int quantity = Integer.parseInt(request.getParameter("quantity"));[m
+[32m+ [m
+[32m++				int quantity = Integer.parseInt(request.getParameter("quantity"));[m
+[32m++ [m
+[32m+ 				if (quantity < 1) {[m
+[32m++[m
+[32m+ 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "数量は1以上を指定してください。");[m
+[32m++[m
+[32m+ 					return;[m
+[31m -				}[m
+[32m+ [m
+[32m++				}[m
+[32m++ [m
+[32m+ 				cartDAO.updateQuantity(userId, productId, quantity);[m
+[31m -				response.sendRedirect(request.getContextPath() + "/cart");[m
+[32m+ [m
+[32m++				response.sendRedirect(request.getContextPath() + "/cart");[m
+[32m++ [m
+[32m+ 			} else if (pathInfo.startsWith("/remove/")) {[m
+[32m++[m
+[32m+ 				// POST /cart/remove/{product_id} (商品削除)[m
+[32m++[m
+[32m+ 				int productId = Integer.parseInt(pathInfo.substring("/remove/".length()));[m
+[32m++[m
+[32m+ 				cartDAO.delete(userId, productId);[m
+[31m -				response.sendRedirect(request.getContextPath() + "/cart");[m
+[32m+ [m
+[32m++				response.sendRedirect(request.getContextPath() + "/cart");[m
+[32m++ [m
+[32m+ 			} else {[m
+[32m++[m
+[32m+ 				response.sendError(HttpServletResponse.SC_NOT_FOUND);[m
+[32m++[m
+[32m+ 			}[m
+[32m++[m
+[32m+ 		} catch (NumberFormatException e) {[m
+[32m++[m
+[32m+ 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "パラメータの形式が不正です。");[m
+[32m++[m
+[32m+ 		}[m
+[32m++[m
+[32m+ 	}[m
+[31m -}[m
+[32m++[m
+[32m++}[m
+[32m++ [m
