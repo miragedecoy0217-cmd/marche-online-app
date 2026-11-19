@@ -38,15 +38,31 @@ public class AdminFilter implements Filter {
 			return;
 		}
 
-		// 商品管理は superadmin と product だけ
+		// 画面ごとの権限チェック（superadmin はすべて開ける）
+		//   /admin/products … product
+		//   /admin/orders   … order
+		//   /admin/stock    … inventory
+		//   /admin/reviews  … review
+		// ダッシュボード（/admin/top）など、ここに無いものは、ログインしていれば開ける
 		String path = request.getServletPath();
-		if (path.startsWith("/admin/products")
-				&& !("superadmin".equals(admin.getRole()) || "product".equals(admin.getRole()))) {
+		String role = admin.getRole();
+
+		boolean denied = (path.startsWith("/admin/products") && !hasRole(role, "product"))
+				|| (path.startsWith("/admin/orders") && !hasRole(role, "order"))
+				|| (path.startsWith("/admin/stock") && !hasRole(role, "inventory"))
+				|| (path.startsWith("/admin/reviews") && !hasRole(role, "review"));
+
+		if (denied) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "この画面を開く権限がありません。");
 			return;
 		}
 
 		chain.doFilter(req, res);
+	}
+
+	/** superadmin、または、必要な役割（required）と同じなら true。 */
+	private boolean hasRole(String role, String required) {
+		return "superadmin".equals(role) || required.equals(role);
 	}
 
 	@Override

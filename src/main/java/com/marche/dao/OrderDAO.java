@@ -109,7 +109,8 @@ public class OrderDAO {
      */
     public boolean cancel(Connection con, int orderId, String reason) throws SQLException {
         String sql = "UPDATE orders SET status = CAST('cancelled' AS order_status), "
-                + "cancel_reason = ?, cancelled_at = now() WHERE order_id = ?";
+                + "cancel_reason = ?, cancelled_at = now() "
+                + "WHERE order_id = ? AND status NOT IN ('cancelled', 'refunded')";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, reason);
