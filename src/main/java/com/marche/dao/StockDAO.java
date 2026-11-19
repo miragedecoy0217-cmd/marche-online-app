@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.marche.model.StockHistory;
 import com.marche.util.DBConnection;
 
 /**
@@ -212,6 +215,64 @@ public class StockDAO {
                 throw e;
             }
         }
+    }
+
+    // =====================================================================
+    // 追加：在庫履歴の取得（管理画面用）
+    // =====================================================================
+
+    /**
+     * 在庫の履歴を、新しい順に取得する（全商品。商品名・担当者名つき）。
+     * 客の操作（注文など）は admin_id が null なので、LEFT JOIN で取得する。
+     *
+     * @param limit 取得する最大件数
+     */
+    public List<StockHistory> findRecentHistory(int limit) throws SQLException {
+        String sql = "SELECT h.history_id, h.product_id, p.product_name, h.admin_id, "
+                + "a.name AS admin_name, h.order_id, h.change_qty, "
+                + "h.reason::text AS reason, h.created_at "
+                + "FROM stock_history h "
+                + "JOIN products p ON h.product_id = p.product_id "
+                + "LEFT JOIN admin_users a ON h.admin_id = a.admin_id "
+                + "ORDER BY h.created_at DESC, h.history_id DESC LIMIT ?";
+
+        List<StockHistory> list = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, limit);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    StockHistory h = new StockHistory();
+                    h.setHistoryId(rs.getInt("history_id"));
+                    h.setProductId(rs.getInt("product_id"));
+                    h.setProductName(rs.getString("product_name"));
+
+                    int adminId = rs.getInt("admin_id");
+                    if (!rs.wasNull()) {
+                        h.setAdminId(adminId);
+                    }
+                    h.setAdminName(rs.getString("admin_name"));
+
+                    int orderId = rs.getInt("order_id");
+                    if (!rs.wasNull()) {
+                        h.setOrderId(orderId);
+                    }
+
+                    h.setChangeQty(rs.getInt("change_qty"));
+                    h.setReason(rs.getString("reason"));
+
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    if (createdAt != null) {
+                        h.setCreatedAt(createdAt.toLocalDateTime());
+                    }
+                    list.add(h);
+                }
+            }
+        }
+        return list;
     }
 
     // ------------------------------------------------------------
