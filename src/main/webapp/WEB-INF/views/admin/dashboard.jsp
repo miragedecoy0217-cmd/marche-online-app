@@ -23,6 +23,9 @@
       <c:if test="${loginAdmin.role == 'superadmin' || loginAdmin.role == 'inventory'}">
         <a href="${pageContext.request.contextPath}/admin/stock" class="btn btn-primary">在庫管理へ</a>
       </c:if>
+      <c:if test="${loginAdmin.role == 'superadmin' || loginAdmin.role == 'review'}">
+        <a href="${pageContext.request.contextPath}/admin/reviews" class="btn btn-primary">レビュー管理へ</a>
+      </c:if>
     </div>
   </div>
 </body>
