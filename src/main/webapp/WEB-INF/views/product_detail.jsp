@@ -222,4 +222,22 @@ body{
 </div>
 
 </body>
+<script>
+function increaseQty() {
+    const qty = document.getElementById("quantity");
+    const max = parseInt(qty.max);
+
+    if (parseInt(qty.value) < max) {
+        qty.value = parseInt(qty.value) + 1;
+    }
+}
+
+function decreaseQty() {
+    const qty = document.getElementById("quantity");
+
+    if (parseInt(qty.value) > 1) {
+        qty.value = parseInt(qty.value) - 1;
+    }
+}
+</script>
 </html>
