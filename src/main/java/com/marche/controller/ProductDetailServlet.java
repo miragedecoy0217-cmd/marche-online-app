@@ -8,10 +8,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.marche.dao.ProductDAO;
 import com.marche.dao.ReviewDAO;
 import com.marche.model.Product;
+import com.marche.model.User;
 
 @WebServlet("/products/*")
 public class ProductDetailServlet extends HttpServlet {
@@ -55,9 +57,30 @@ public class ProductDetailServlet extends HttpServlet {
 				return;
 			}
 
+			ReviewDAO reviewDAO = new ReviewDAO();
+
 			request.setAttribute("product", product);
 			// 承認済みレビューを取得して画面へ渡す
-			request.setAttribute("reviews", new ReviewDAO().findApprovedByProduct(productId));
+			request.setAttribute("reviews", reviewDAO.findApprovedByProduct(productId));
+
+			// ログイン中なら、この商品をレビューできるかを調べる
+			HttpSession session = request.getSession(false);
+			User loginUser = (session == null) ? null : (User) session.getAttribute("loginUser");
+			boolean canReview = false;
+			if (loginUser != null) {
+				canReview = reviewDAO.findReviewableOrderId(loginUser.getUser_id(), productId) != null;
+			}
+			request.setAttribute("loggedIn", loginUser != null);
+			request.setAttribute("canReview", canReview);
+
+			// 投稿結果のメッセージを1回だけ表示する（表示したらセッションから消す）
+			if (session != null) {
+				request.setAttribute("reviewMessage", session.getAttribute("reviewMessage"));
+				request.setAttribute("reviewError", session.getAttribute("reviewError"));
+				session.removeAttribute("reviewMessage");
+				session.removeAttribute("reviewError");
+			}
+
 			request.getRequestDispatcher("/WEB-INF/views/product_detail.jsp").forward(request, response);
 
 		} catch (SQLException e) {
