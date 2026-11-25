@@ -47,6 +47,12 @@
     <div class="container">
         <a class="navbar-brand fw-bold" href="${ctx}/"><img src="${ctx}/images/logoma-ku.png"alt="マルシェオンライン"class="logo-img"></a>
         <div class="d-flex align-items-center gap-2">
+
+           <a class="btn btn-outline-primary btn-sm"
+                href="${ctx}/cart">
+                🛒 カート（${cartItemCount}）
+           </a>
+
             <c:choose>
                 <c:when test="${not empty loginAdmin}">
                     <span class="text-white small"><c:out value="${loginAdmin.name}"/> さん</span>

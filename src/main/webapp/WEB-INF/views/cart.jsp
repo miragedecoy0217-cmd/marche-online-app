@@ -35,6 +35,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>画像</th>
                             <th>商品名</th>
                             <th>価格</th>
                             <th>数量</th>
@@ -45,6 +46,13 @@
                     <tbody>
                         <c:forEach var="item" items="${cartItems}">
                             <tr>
+
+                                <td>
+                                <img src="${pageContext.request.contextPath}/${item.imagePath}"
+                                     width="80"
+                                     height="80"
+                                     style="object-fit:cover;">
+                                </td>
                                 <td>${item.productName}</td>
                                 <td>&yen;${item.price}</td>
                                 <td>
