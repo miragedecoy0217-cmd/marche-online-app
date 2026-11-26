@@ -43,6 +43,7 @@ public class AdminFilter implements Filter {
 		//   /admin/orders   … order
 		//   /admin/stock    … inventory
 		//   /admin/reviews  … review
+		//   /admin/sales    … order（売上CSV。superadmin も可）
 		// ダッシュボード（/admin/top）など、ここに無いものは、ログインしていれば開ける
 		String path = request.getServletPath();
 		String role = admin.getRole();
@@ -50,7 +51,8 @@ public class AdminFilter implements Filter {
 		boolean denied = (path.startsWith("/admin/products") && !hasRole(role, "product"))
 				|| (path.startsWith("/admin/orders") && !hasRole(role, "order"))
 				|| (path.startsWith("/admin/stock") && !hasRole(role, "inventory"))
-				|| (path.startsWith("/admin/reviews") && !hasRole(role, "review"));
+				|| (path.startsWith("/admin/reviews") && !hasRole(role, "review"))
+				|| (path.startsWith("/admin/sales") && !hasRole(role, "order"));
 
 		if (denied) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "この画面を開く権限がありません。");

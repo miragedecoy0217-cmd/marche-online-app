@@ -27,6 +27,19 @@
         <a href="${pageContext.request.contextPath}/admin/reviews" class="btn btn-primary">レビュー管理へ</a>
       </c:if>
     </div>
+
+    <!-- 売上CSV（superadmin と order だけ） -->
+    <c:if test="${loginAdmin.role == 'superadmin' || loginAdmin.role == 'order'}">
+      <div class="mt-4">
+        <h2 class="h5">売上CSVダウンロード</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="${pageContext.request.contextPath}/admin/sales/csv?type=daily" class="btn btn-outline-secondary">日次売上</a>
+          <a href="${pageContext.request.contextPath}/admin/sales/csv?type=monthly" class="btn btn-outline-secondary">月次売上</a>
+          <a href="${pageContext.request.contextPath}/admin/sales/csv?type=category" class="btn btn-outline-secondary">カテゴリ別売上</a>
+          <a href="${pageContext.request.contextPath}/admin/sales/csv?type=product" class="btn btn-outline-secondary">商品別売上</a>
+        </div>
+      </div>
+    </c:if>
   </div>
 </body>
 </html>
