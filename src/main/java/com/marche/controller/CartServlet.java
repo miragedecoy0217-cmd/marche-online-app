@@ -52,7 +52,7 @@ public class CartServlet extends HttpServlet {
                 cartItems);
 
         request.getRequestDispatcher(
-                "/WEB-INF/views/Cart.jsp")
+                "/WEB-INF/views/cart.jsp")
                 .forward(request, response);
     }
 

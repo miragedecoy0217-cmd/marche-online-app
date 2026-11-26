@@ -69,7 +69,7 @@ public class OrderServlet extends HttpServlet {
             request.setAttribute("cartItems", cartItems);
             request.setAttribute("totalAmount", totalAmount);
 
-            request.getRequestDispatcher("/WEB-INF/views/order.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/orders.jsp").forward(request, response);
 
         } else if ("/complete".equals(pathInfo)) {
             // ----------------------------------------------------
