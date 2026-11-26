@@ -36,7 +36,7 @@ import com.marche.util.DBConnection;
 @WebServlet("/admin/orders")
 public class AdminOrderServlet extends HttpServlet {
 
-	private static final String VIEW_LIST = "/WEB-INF/views/admin/order.jsp";
+	private static final String VIEW_LIST = "/WEB-INF/views/admin/orders.jsp";
 	private static final String SESSION_MESSAGE = "adminMessage";
 
 	/** 一覧の絞り込みに使えるステータス（order_status ENUM の全部） */
