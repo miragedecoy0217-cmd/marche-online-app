@@ -40,6 +40,27 @@ body {
   text-decoration: underline;
 }
 
+.register-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.btn-register {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #f59e0b;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.btn-register:hover {
+    background-color: #d97706;
+}
 
 </style>
 
@@ -72,6 +93,15 @@ body {
         
         <button type="submit" class="btn-submit">ログイン</button>
     </form>
+
+<div class="register-link">
+    <p>初めてご利用の方</p>
+    <a href="${pageContext.request.contextPath}/register"
+       class="btn-register">
+        新規会員登録
+    </a>
+</div>
+
 </div>
 <a href="${pageContext.request.contextPath}/" class="back-to-top">トップへ戻る</a>
 

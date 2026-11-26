@@ -45,7 +45,7 @@
 <!-- ヘッダー -->
 <nav class="site-header navbar navbar-dark">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="${ctx}/"><img src="${ctx}/images/logoma-ku.png"alt="マルシェオンライン"class="logo-img"></a>
+<a class="navbar-brand fw-bold" href="${ctx}/"><img src="${ctx}/imags/rogoma-ku.png"alt="マルシェオンライン"class="logo-img"></a>
         <div class="d-flex align-items-center gap-2">
 
            <a class="btn btn-outline-primary btn-sm"
@@ -64,7 +64,7 @@
                     <a class="btn btn-outline-light btn-sm" href="${ctx}/logout">ログアウト</a>
                 </c:when>
                 <c:otherwise>
-                    <a class="btn btn-outline-light btn-sm" href="${ctx}/login">ログイン</a>
+                    <a class="btn btn-outline-primary btn-sm" href="${ctx}/login">ログイン</a>
                     <a class="btn btn-accent btn-sm" href="${ctx}/register">新規登録</a>
                 </c:otherwise>
             </c:choose>
