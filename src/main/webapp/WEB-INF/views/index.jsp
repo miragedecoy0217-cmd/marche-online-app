@@ -36,7 +36,7 @@
         .btn-outline-primary{
                 border-radius:20px;}
         .logo-img{
-                height:70px;
+                height:50px;
                 width:auto;}
     </style>
 </head>
