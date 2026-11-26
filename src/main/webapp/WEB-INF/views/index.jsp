@@ -45,7 +45,7 @@
 <!-- ヘッダー -->
 <nav class="site-header navbar navbar-dark">
     <div class="container">
-<a class="navbar-brand fw-bold" href="${ctx}/"><img src="${ctx}/images/logoma-ku.png"alt="マルシェオンライン"class="logo-img"></a>
+<a class="navbar-brand fw-bold" href="${ctx}/"><img src="${ctx}/images/rogoma-ku.png"alt="マルシェオンライン"class="rogo-img"></a>
         <div class="d-flex align-items-center gap-2">
 
            <a class="btn btn-outline-primary btn-sm"
@@ -56,12 +56,12 @@
             <c:choose>
                 <c:when test="${not empty loginAdmin}">
                     <span class="text-white small"><c:out value="${loginAdmin.name}"/> さん</span>
-                    <a class="btn btn-outline-light btn-sm" href="${ctx}/admin/top">管理画面</a>
-                    <a class="btn btn-outline-light btn-sm" href="${ctx}/logout">ログアウト</a>
+                    <a class="btn btn-outline-primary btn-sm" href="${ctx}/admin/top">管理画面</a>
+                    <a class="btn btn-outline-primary btn-sm" href="${ctx}/logout">ログアウト</a>
                 </c:when>
                 <c:when test="${not empty loginUser}">
                     <span class="text-white small"><c:out value="${loginUser.name}"/> さん</span>
-                    <a class="btn btn-outline-light btn-sm" href="${ctx}/logout">ログアウト</a>
+                    <a class="btn btn-outline-primary btn-sm" href="${ctx}/logout">ログアウト</a>
                 </c:when>
                 <c:otherwise>
                     <a class="btn btn-outline-primary btn-sm" href="${ctx}/login">ログイン</a>
